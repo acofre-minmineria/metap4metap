@@ -1,7 +1,6 @@
 import React from 'react';
 import { ShoppingCart } from 'lucide-react';
 import { Button } from './ui/button';
-import { cn } from '../lib/utils';
 
 interface HeaderProps {
   cartItemCount: number;
