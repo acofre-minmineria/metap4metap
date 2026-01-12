@@ -3,12 +3,15 @@ import { Header } from './components/Header';
 import { Footer } from './components/Footer';
 import { CardItem } from './components/CardItem';
 import { ShoppingCart } from './components/ShoppingCart';
+import { PriceFilter } from './components/PriceFilter';
+import { Button } from './components/ui/button';
 import type { PokemonCard, CartItem } from './types/pokemon.js';
 import { mockCards } from './data/cards';
 
 function App() {
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [isCartOpen, setIsCartOpen] = useState(false);
+  const [priceFilter, setPriceFilter] = useState<{ min: number; max: number }>({ min: 0, max: Infinity });
 
   const addToCart = (card: PokemonCard) => {
     setCartItems((prev) => {
@@ -37,6 +40,18 @@ function App() {
   const removeFromCart = (id: string) => {
     setCartItems((prev) => prev.filter((item) => item.id !== id));
   };
+
+  const handlePriceFilterChange = (min: number, max: number) => {
+    setPriceFilter({ min, max });
+  };
+
+  const handleResetFilter = () => {
+    setPriceFilter({ min: 0, max: Infinity });
+  };
+
+  const filteredCards = mockCards.filter(
+    (card) => card.price >= priceFilter.min && card.price <= priceFilter.max
+  );
 
   const totalItems = cartItems.reduce((sum, item) => sum + item.quantity, 0);
 
@@ -69,10 +84,39 @@ function App() {
             <h2 className="text-3xl font-bold mb-8 text-center">
               Catálogo de Cartas
             </h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-              {mockCards.map((card) => (
-                <CardItem key={card.id} card={card} onAddToCart={addToCart} />
-              ))}
+            
+            <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+              {/* Sidebar con filtro */}
+              <div className="lg:col-span-1">
+                <PriceFilter 
+                  onFilterChange={handlePriceFilterChange}
+                  onReset={handleResetFilter}
+                />
+                <div className="mt-4 p-4 bg-card rounded-lg border">
+                  <p className="text-sm text-muted-foreground">
+                    Mostrando <span className="font-semibold text-foreground">{filteredCards.length}</span> de {mockCards.length} cartas
+                  </p>
+                </div>
+              </div>
+
+              {/* Grid de cartas */}
+              <div className="lg:col-span-3">
+                {filteredCards.length > 0 ? (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6">
+                    {filteredCards.map((card) => (
+                      <CardItem key={card.id} card={card} onAddToCart={addToCart} />
+                    ))}
+                  </div>
+                ) : (
+                  <div className="flex flex-col items-center justify-center py-16 text-center">
+                    <p className="text-2xl font-semibold mb-2">No se encontraron cartas</p>
+                    <p className="text-muted-foreground mb-4">Intenta ajustar los filtros de precio</p>
+                    <Button onClick={handleResetFilter} variant="outline">
+                      Limpiar filtros
+                    </Button>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         </section>
